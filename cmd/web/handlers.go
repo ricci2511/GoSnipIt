@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
+
+	"gosnipit.ricci2511.dev/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -16,6 +18,17 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%v\n", snippet)
+	}
+
+	/*
 	// important: the file containing the base template must be the first file in the slice
 	files := []string{
 		"./ui/html/base.html",
@@ -36,6 +49,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 	}
+	*/
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +59,18 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+
+		return
+	}
+
+    fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -55,5 +80,11 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    w.Write([]byte("Create a new snippet..."))
+	id, err := app.snippets.Insert("Dummy title", "Some dummy content, \nIts cool man!", 7)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// redirect user to the page of the newly created snippet
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
 }
