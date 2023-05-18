@@ -3,25 +3,43 @@ package main
 import (
 	"net/http"
 
-	"github.com/justinas/alice"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func (app *application) routes() http.Handler {
-    mux := http.NewServeMux()
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	r := chi.NewRouter()
 
+	// simple custom 404 handler
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		app.notFound(w)
+	})
+
+	// standard middlewares stack to be executed on each request
+	r.Use(secureHeaders)   
+	r.Use(middleware.CleanPath)
+	r.Use(app.logRequest)
+	r.Use(app.recoverPanic)
+
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	// register the file server as the handler for all URL pathts
 	// starting with "/static/". For matching paths, we strip the
 	// "static" prefix before the request reaches the file server.
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	r.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	// application routes
-    mux.HandleFunc("/", app.home)
-    mux.HandleFunc("/snippet/view", app.snippetView)
-    mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-	// standard middlewares to be run on every request
-	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	r.Get("/", app.home)
 
-	return standard.Then(mux)
+	// rest routes for snippets
+	r.Route("/snippets", func(r chi.Router) {
+		r.Get("/create", app.snippetCreateForm)
+		r.Post("/", app.snippetCreate)
+
+		r.Route("/{snippetID}", func(r chi.Router) {
+			r.Use(app.snippetCtx)
+			r.Get("/", app.snippetView)
+		})
+	})
+
+	return r
 }

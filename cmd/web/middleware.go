@@ -1,8 +1,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"gosnipit.ricci2511.dev/internal/models"
 )
 
 func secureHeaders(next http.Handler) http.Handler {
@@ -40,5 +46,38 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		}()
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+type contextKey string
+
+const (
+	contextKeySnippet = contextKey("snippet")
+)
+
+func (app *application) snippetCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// get the id from the url param and check if it's valid
+    	id, err := strconv.Atoi(chi.URLParam(r, "snippetID"))
+    	if err != nil || id < 1 {
+			app.notFound(w)
+    	    return
+    	}
+
+		// query the db for the snippet
+		snippet, err := app.snippets.Get(id)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				app.notFound(w)
+			} else {
+				app.serverError(w, err)
+			}
+		
+			return
+		}
+
+		// add the snippet to the request context and call the next handler
+		ctx :=  context.WithValue(r.Context(), contextKeySnippet, snippet)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
