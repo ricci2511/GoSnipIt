@@ -53,7 +53,6 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		return
 	}
 
-	// write the provided status code to the response
 	w.WriteHeader(status)
 	
 	// finally write the contents of the buffer to the http.ResponseWriter

@@ -27,7 +27,6 @@ var functions = template.FuncMap{
 
 // initialiazes a map to hold the template set of all pages with the page file name as the key
 func newTemplateCache() (map[string]*template.Template, error) {
-	// init template cache map
 	cache := map[string]*template.Template{}
 
 	pages, err := filepath.Glob("./ui/html/pages/*.html")
@@ -39,14 +38,14 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// extract file name from path
 		name := filepath.Base(page)
 
-		// first register the template functions with the template set
-		// and add the base template to the newly created template set
+		// first register the template functions and then add 
+		// the base template to the newly created template set
 		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.html")
 		if err != nil {
 			return nil, err
 		}
 
-		// then add any partials
+		// add any partials
 		ts, err = ts.ParseGlob("./ui/html/partials/*.html")
 		if err != nil {
 			return nil, err
@@ -58,7 +57,6 @@ func newTemplateCache() (map[string]*template.Template, error) {
 			return nil, err
 		}
 
-		// finally, add the template set to the map
 		cache[name] = ts
 	}
 	

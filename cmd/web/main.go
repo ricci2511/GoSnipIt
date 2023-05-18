@@ -43,8 +43,6 @@ func main() {
 	dsnStr := fmt.Sprintf("%v:%v@/gosnipit?parseTime=true", env["MYSQL_USER"], env["MYSQL_PASSWORD"])
 	dsn := flag.String("dsn", dsnStr, "MySQL database connection string")
 
-	// this reads the the value of the flags and assigns them to their variables
-	// important: must be called before using the variables, e.g addr
 	flag.Parse()
 
 	db, err := openDb(*dsn)
