@@ -11,8 +11,9 @@ import (
 // holds any dynamic data that we want to pass to our HTML templates
 type templateData struct {
 	CurrentYear int
-	Snippet *models.Snippet
-	Snippets []*models.Snippet
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
+	Form        any
 }
 
 // formats dates in a human-readable format
@@ -38,7 +39,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// extract file name from path
 		name := filepath.Base(page)
 
-		// first register the template functions and then add 
+		// first register the template functions and then add
 		// the base template to the newly created template set
 		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.html")
 		if err != nil {
@@ -59,6 +60,6 @@ func newTemplateCache() (map[string]*template.Template, error) {
 
 		cache[name] = ts
 	}
-	
+
 	return cache, nil
 }

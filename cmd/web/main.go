@@ -11,16 +11,18 @@ import (
 
 	"gosnipit.ricci2511.dev/internal/models"
 
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
 
 // struct to hold the application-wide dependencies
 type application struct {
-	errorLog *log.Logger
-	infoLog *log.Logger
-	snippets *models.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -37,7 +39,7 @@ func main() {
 
 	// cli flags
 	// fall back to 4000 if no host is provided
-	addr := flag.String("addr", ":4000", "HTTP network adress")   
+	addr := flag.String("addr", ":4000", "HTTP network adress")
 
 	// default dsn connection string
 	dsnStr := fmt.Sprintf("%v:%v@/gosnipit?parseTime=true", env["MYSQL_USER"], env["MYSQL_PASSWORD"])
@@ -58,24 +60,27 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	formDecoder := form.NewDecoder()
+
 	// init new application struct
 	app := &application{
-		errorLog: errorLog,
-		infoLog: infoLog,
-		snippets: &models.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	// init new http.Server struct with the host, custom error logger and routes
 	srv := &http.Server{
-		Addr: *addr,
+		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler: app.routes(),
+		Handler:  app.routes(),
 	}
 
-    infoLog.Printf("Starting server on %s", *addr)
-    err = srv.ListenAndServe()
-    errorLog.Fatal(err)
+	infoLog.Printf("Starting server on %s", *addr)
+	err = srv.ListenAndServe()
+	errorLog.Fatal(err)
 }
 
 func openDb(dsn string) (*sql.DB, error) {
@@ -89,7 +94,6 @@ func openDb(dsn string) (*sql.DB, error) {
 	} else {
 		log.Println("Connected to database")
 	}
-	
 
 	return db, nil
 }

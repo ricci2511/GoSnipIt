@@ -164,10 +164,6 @@ form div {
     margin-bottom: 18px;
 }
 
-form div:last-child {
-    border-top: 1px dashed #E4E5E7;
-}
-
 form input[type="radio"] {
     margin-left: 18px;
 }
@@ -184,18 +180,13 @@ form input[type=text], form input[type="password"], form input[type="email"], te
     border-radius: 3px;
 }
 
-form label {
-    display: inline-block;
-    margin-bottom: 9px;
-}
-
 .error {
     color: #C0392B;
     font-weight: bold;
     display: block;
 }
 
-.error + textarea, .error + input {
+.error:has(+ input), .error:has(+ textarea) {
     border-color: #C0392B !important;
     border-width: 2px !important;
 }

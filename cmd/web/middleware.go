@@ -58,11 +58,11 @@ const (
 func (app *application) snippetCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// get the id from the url param and check if it's valid
-    	id, err := strconv.Atoi(chi.URLParam(r, "snippetID"))
-    	if err != nil || id < 1 {
+		id, err := strconv.Atoi(chi.URLParam(r, "snippetID"))
+		if err != nil || id < 1 {
 			app.notFound(w)
-    	    return
-    	}
+			return
+		}
 
 		// query the db for the snippet
 		snippet, err := app.snippets.Get(id)
@@ -72,12 +72,12 @@ func (app *application) snippetCtx(next http.Handler) http.Handler {
 			} else {
 				app.serverError(w, err)
 			}
-		
+
 			return
 		}
 
 		// add the snippet to the request context and call the next handler
-		ctx :=  context.WithValue(r.Context(), contextKeySnippet, snippet)
+		ctx := context.WithValue(r.Context(), contextKeySnippet, snippet)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

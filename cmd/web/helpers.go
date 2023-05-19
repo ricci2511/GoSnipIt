@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/go-playground/form/v4"
 )
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
@@ -45,7 +48,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// init buffer to hold template output
 	buf := new(bytes.Buffer)
 
-	// write the template to the buffer to catch any errors before 
+	// write the template to the buffer to catch any errors before
 	// writing directly to the http.ResponseWriter
 	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
@@ -54,7 +57,31 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	}
 
 	w.WriteHeader(status)
-	
+
 	// finally write the contents of the buffer to the http.ResponseWriter
 	buf.WriteTo(w)
+}
+
+// helper to decode form data into a struct (target being the struct to decode into)
+func (app *application) decodePostForm(r *http.Request, target any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(target, r.PostForm)
+	if err != nil {
+		// if the error is an InvalidDecoderError, we probably passed in an invalid struct
+		// so errors.As() is used to check and panic if that's the case
+		var invalidDecoderError *form.InvalidDecoderError
+
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+
+		// other types of errors are likely caused by the client
+		return err
+	}
+
+	return nil
 }

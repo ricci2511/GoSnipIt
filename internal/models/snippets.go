@@ -8,8 +8,8 @@ import (
 
 // Represents a single snippet in the database
 type Snippet struct {
-	ID int
-	Title string
+	ID      int
+	Title   string
 	Content string
 	Created time.Time
 	Expires time.Time
@@ -55,7 +55,7 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 		return nil, err
 	}
 
-	return s, nil;
+	return s, nil
 }
 
 // returns the 10 most recently created snippets

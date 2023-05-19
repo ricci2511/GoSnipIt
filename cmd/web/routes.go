@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	})
 
 	// standard middlewares stack to be executed on each request
-	r.Use(secureHeaders)   
+	r.Use(secureHeaders)
 	r.Use(middleware.CleanPath)
 	r.Use(app.logRequest)
 	r.Use(app.recoverPanic)
@@ -26,7 +26,6 @@ func (app *application) routes() http.Handler {
 	// starting with "/static/". For matching paths, we strip the
 	// "static" prefix before the request reaches the file server.
 	r.Handle("/static/", http.StripPrefix("/static", fileServer))
-
 
 	r.Get("/", app.home)
 
