@@ -55,17 +55,10 @@ type snippetCreateForm struct {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	// parses form data into r.PostForm map
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
 	var form snippetCreateForm
 
-	// decode and fill the form struct with the relevant form data
-	err = app.decodePostForm(r, &form)
+	// fill the snippetCreateForm struct with the relevant form data
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
@@ -89,6 +82,9 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 	}
+
+	// add flash message to session data
+	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 
 	// redirect user to the page of the newly created snippet
 	http.Redirect(w, r, fmt.Sprintf("/snippets/%d", id), http.StatusSeeOther)

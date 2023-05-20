@@ -14,6 +14,8 @@ import (
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
+		// retrieve and delete flash message from session data if it exists
+		Flash: app.sessionManager.PopString(r.Context(), "flash"),
 	}
 }
 
@@ -64,6 +66,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 
 // helper to decode form data into a struct (target being the struct to decode into)
 func (app *application) decodePostForm(r *http.Request, target any) error {
+	// parses form data into r.PostForm map
 	err := r.ParseForm()
 	if err != nil {
 		return err

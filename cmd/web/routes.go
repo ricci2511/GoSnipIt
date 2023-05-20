@@ -27,16 +27,21 @@ func (app *application) routes() http.Handler {
 	// "static" prefix before the request reaches the file server.
 	r.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	r.Get("/", app.home)
+	// all routes that require authentication
+	r.Group(func(r chi.Router) {
+		r.Use(app.sessionManager.LoadAndSave)
 
-	// rest routes for snippets
-	r.Route("/snippets", func(r chi.Router) {
-		r.Get("/create", app.snippetCreateForm)
-		r.Post("/", app.snippetCreate)
+		r.Get("/", app.home)
 
-		r.Route("/{snippetID}", func(r chi.Router) {
-			r.Use(app.snippetCtx)
-			r.Get("/", app.snippetView)
+		// rest routes for snippets
+		r.Route("/snippets", func(r chi.Router) {
+			r.Get("/create", app.snippetCreateForm)
+			r.Post("/", app.snippetCreate)
+
+			r.Route("/{snippetID}", func(r chi.Router) {
+				r.Use(app.snippetCtx)
+				r.Get("/", app.snippetView)
+			})
 		})
 	})
 
