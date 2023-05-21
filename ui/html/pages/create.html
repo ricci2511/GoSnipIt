@@ -2,6 +2,7 @@
 
 {{define "main"}}
 <form action="/snippets" method="post">
+    <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     <div>
         <label for="title">Title: </label>
         <input type="text" name="title" id="title" value="{{.Form.Title}}">

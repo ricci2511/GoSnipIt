@@ -1,0 +1,31 @@
+{{define "title"}}Signup{{end}}
+
+{{define "main"}}
+<form action="/user/signup" method="post" novalidate>
+    <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+    <div>
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" value="{{.Form.Name}}">
+        {{with .Form.FieldErrors.name}}
+        <label class="error" for="name">{{.}}</label>
+        {{end}}
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" value="{{.Form.Email}}">
+        {{with .Form.FieldErrors.email}}
+        <label class="error" for="email">{{.}}</label>
+        {{end}}
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password">
+        {{with .Form.FieldErrors.password}}
+        <label class="error" for="password">{{.}}</label>
+        {{end}}
+    </div>
+    <div>
+        <input type="submit" value="Signup">
+    </div>
+</form>
+{{end}}

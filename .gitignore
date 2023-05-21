@@ -28,3 +28,6 @@ go.work
 
 # local mysql docker container data
 /data
+
+# self-signed tls cert keys
+/tls

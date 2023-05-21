@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Represents a single snippet in the database
+// Represents a snippet in the database
 type Snippet struct {
 	ID      int
 	Title   string
