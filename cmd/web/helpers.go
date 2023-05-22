@@ -93,5 +93,11 @@ func (app *application) decodePostForm(r *http.Request, target any) error {
 }
 
 func (app *application) isAuthenticated(r *http.Request) bool {
-	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
+	// in the case the context key doesn't exist, we use ok as fallback which will be false
+	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+	if !ok {
+		return false
+	}
+
+	return isAuthenticated
 }

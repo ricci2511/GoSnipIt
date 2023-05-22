@@ -27,6 +27,7 @@ func (app *application) routes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(noSurf)
 		r.Use(app.sessionManager.LoadAndSave)
+		r.Use(app.authenticate)
 
 		r.Get("/", app.home)
 

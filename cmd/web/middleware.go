@@ -50,6 +50,31 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		// user is not authenticated, continue with the next handler
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// check if the user exists in the db
+		exists, err := app.users.Exists(id)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *application) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
@@ -76,12 +101,6 @@ func noSurf(next http.Handler) http.Handler {
 	return csrfHandler
 }
 
-type contextKey string
-
-const (
-	contextKeySnippet = contextKey("snippet")
-)
-
 func (app *application) snippetCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// get the id from the url param and check if it's valid
@@ -104,7 +123,7 @@ func (app *application) snippetCtx(next http.Handler) http.Handler {
 		}
 
 		// add the snippet to the request context and call the next handler
-		ctx := context.WithValue(r.Context(), contextKeySnippet, snippet)
+		ctx := context.WithValue(r.Context(), snippetContextKey, snippet)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

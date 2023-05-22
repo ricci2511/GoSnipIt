@@ -153,7 +153,7 @@ func (app *application) userLogout(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// retrieve the snippet from the context
 	ctx := r.Context()
-	snippet, ok := ctx.Value(contextKeySnippet).(*models.Snippet)
+	snippet, ok := ctx.Value(snippetContextKey).(*models.Snippet)
 	if !ok {
 		app.serverError(w, errors.New("could not get snippet"))
 		return
