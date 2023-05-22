@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"gosnipit.ricci2511.dev/internal/models"
+	"gosnipit.ricci2511.dev/ui"
 )
 
 // holds any dynamic data that we want to pass to our HTML templates
@@ -33,7 +35,8 @@ var functions = template.FuncMap{
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.html")
+	// retrieve a slice of all html pages from the ui embed.FS
+	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {
 		return nil, err
 	}
@@ -42,21 +45,15 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// extract file name from path
 		name := filepath.Base(page)
 
-		// first register the template functions and then add
-		// the base template to the newly created template set
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.html")
-		if err != nil {
-			return nil, err
+		patterns := []string{
+			"html/base.html",
+			"html/partials/*html",
+			page,
 		}
 
-		// add any partials
-		ts, err = ts.ParseGlob("./ui/html/partials/*.html")
-		if err != nil {
-			return nil, err
-		}
-
-		// add the page template
-		ts, err = ts.ParseFiles(page)
+		// first register any existing template functions and then parse
+		// the base template from the embed.FS to the newly created template set
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}

@@ -54,7 +54,7 @@ func MinChars(value string, min int) bool {
 }
 
 // returns true if the value is in the permittedValues slice
-func PermittedInt(value int, permittedValues ...int) bool {
+func PermittedValue[T comparable](value T, permittedValues ...T) bool {
 	for i := range permittedValues {
 		if value == permittedValues[i] {
 			return true

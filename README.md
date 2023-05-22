@@ -1,3 +1,3 @@
 # GoSnipIt
 
-Nothing to see here yet. Just learning some Go by bulding a "pastebin" like app.
+A simple "pastebin" like app to get familiar with [Go](https://go.dev/).

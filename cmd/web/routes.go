@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"gosnipit.ricci2511.dev/ui"
 )
 
 func (app *application) routes() http.Handler {
@@ -21,7 +22,9 @@ func (app *application) routes() http.Handler {
 	r.Use(app.logRequest)
 	r.Use(app.recoverPanic)
 
-	r.Handle("/static/*", staticFileServer("./ui/static/"))
+	// static file server for the ui embedded filesystem
+	fs := http.FileServer(http.FS(ui.Files))
+	r.Method(http.MethodGet, "/static/*", fs)
 
 	// all routes run csrf protection and session management middleware
 	r.Group(func(r chi.Router) {
@@ -54,9 +57,4 @@ func (app *application) routes() http.Handler {
 	})
 
 	return r
-}
-
-func staticFileServer(staticDir string) http.Handler {
-	fs := http.FileServer(http.Dir(staticDir))
-	return http.StripPrefix("/static/", fs)
 }
