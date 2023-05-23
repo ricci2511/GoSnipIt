@@ -26,7 +26,8 @@ func (app *application) routes() http.Handler {
 	fs := http.FileServer(http.FS(ui.Files))
 	r.Method(http.MethodGet, "/static/*", fs)
 
-	// all routes run csrf protection and session management middleware
+	r.Get("/ping", ping)
+
 	r.Group(func(r chi.Router) {
 		r.Use(noSurf)
 		r.Use(app.sessionManager.LoadAndSave)

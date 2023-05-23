@@ -217,3 +217,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// redirect user to the page of the newly created snippet
 	http.Redirect(w, r, fmt.Sprintf("/snippets/%d", id), http.StatusSeeOther)
 }
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
