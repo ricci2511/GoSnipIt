@@ -181,8 +181,6 @@ func (app *application) accountPasswordUpdate(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fmt.Printf("%+v\n", form)
-
 	// form validation
 	form.CheckField(validator.NotBlank(form.CurrentPassword), "currentPassword", "This field cannot be blank")
 	form.CheckField(validator.NotBlank(form.NewPassword), "newPassword", "This field cannot be blank")
