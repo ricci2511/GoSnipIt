@@ -22,6 +22,7 @@ import (
 
 // struct to hold the application-wide dependencies
 type application struct {
+	debug          bool
 	errorLog       *log.Logger
 	infoLog        *log.Logger
 	snippets       models.SnippetModelInterface
@@ -50,6 +51,7 @@ func main() {
 	// default dsn connection string
 	dsnStr := fmt.Sprintf("%v:%v@/gosnipit?parseTime=true", env["MYSQL_USER"], env["MYSQL_PASSWORD"])
 	dsn := flag.String("dsn", dsnStr, "MySQL database connection string")
+	debug := flag.Bool("debug", false, "Enable debug mode")
 
 	flag.Parse()
 
@@ -77,6 +79,7 @@ func main() {
 
 	// init new application struct
 	app := &application{
+		debug:          *debug,
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippets:       &models.SnippetModel{DB: db},

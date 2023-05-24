@@ -22,11 +22,16 @@ func (app *application) newTemplateData(r *http.Request) *templateData {
 	}
 }
 
-// writes an error message and stack trace to the errorLog, then
-// sends a generic 500 Internal Server Error response to the user
+// writes a stack trace to the errorLog, then depending on whether
+// debug mode is on or off, sends the trace or a generic 500 response to the user
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.errorLog.Output(2, trace)
+
+	if app.debug {
+		http.Error(w, trace, http.StatusInternalServerError)
+		return
+	}
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
