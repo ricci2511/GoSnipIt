@@ -75,6 +75,37 @@ func TestSnippetView(t *testing.T) {
 	}
 }
 
+func TestSnippetCreate(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	t.Run("Unauthenticated", func(t *testing.T) {
+		code, headers, _ := ts.get(t, "/snippets/create")
+		// check that the client is redirected to the login page
+		assert.Equal(t, code, http.StatusSeeOther)
+		// check that the location header is set to the login page
+		assert.Equal(t, headers.Get("Location"), "/user/login")
+	})
+
+	t.Run("Authenticated", func(t *testing.T) {
+		_, _, body := ts.get(t, "/user/login")
+		csrfToken := extractCSRFToken(t, body)
+
+		form := url.Values{}
+		// mock credentials from internal/models/mocks/users.go
+		form.Add("email", "mocked@example.com")
+		form.Add("password", "mocked1234")
+		form.Add("csrf_token", csrfToken)
+		ts.postForm(t, "/user/login", form)
+
+		// check that the user can access the create snippet page
+		code, _, body := ts.get(t, "/snippets/create")
+		assert.Equal(t, code, http.StatusOK)
+		assert.StringContains(t, body, "<form action=\"/snippets\" method=\"post\">")
+	})
+}
+
 func TestUserSignup(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
@@ -84,12 +115,10 @@ func TestUserSignup(t *testing.T) {
 	_, _, body := ts.get(t, "/user/signup")
 	csrfToken := extractCSRFToken(t, body)
 
-	t.Logf("CSRF token: %s", csrfToken)
-
 	const (
-		validName     = "Mocky"
+		validName     = "Mocky the II"
 		validPassword = "validPass"
-		validEmail    = "mocky@example.com"
+		validEmail    = "mockythesecond@example.com"
 		formTag       = "<form action=\"/user/signup\" method=\"post\" novalidate>"
 	)
 

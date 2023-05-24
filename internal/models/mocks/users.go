@@ -1,6 +1,10 @@
 package mocks
 
-import "gosnipit.ricci2511.dev/internal/models"
+import (
+	"time"
+
+	"gosnipit.ricci2511.dev/internal/models"
+)
 
 type UserModel struct{}
 
@@ -15,7 +19,7 @@ func (m *UserModel) Insert(name, email, password string) error {
 }
 
 func (m *UserModel) Authenticate(email, password string) (int, error) {
-	if email == "mocked@example.com" && password == "pass" {
+	if email == "mocked@example.com" && password == "mocked1234" {
 		return 1, nil
 	}
 
@@ -29,4 +33,25 @@ func (m *UserModel) Exists(id int) (bool, error) {
 	default:
 		return false, nil
 	}
+}
+
+func (m *UserModel) Get(id int) (*models.User, error) {
+	if id == 1 {
+		return &models.User{
+			ID:      1,
+			Name:    "Mocky McMockface",
+			Email:   "mocked@example.com",
+			Created: time.Now(),
+		}, nil
+	}
+
+	return nil, models.ErrNoRecord
+}
+
+func (m *UserModel) PasswordUpdate(id int, currentPassword, newPassword string) error {
+	if id == 1 && currentPassword == "mocked1234" && newPassword == "mocked5678" {
+		return nil
+	}
+
+	return models.ErrInvalidCredentials
 }

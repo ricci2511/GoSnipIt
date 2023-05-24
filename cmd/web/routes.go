@@ -34,8 +34,9 @@ func (app *application) routes() http.Handler {
 		r.Use(app.authenticate)
 
 		r.Get("/", app.home)
+		r.Get("/about", app.about)
 
-		// rest routes for user authentication
+		// rest routes for user
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/signup", app.userSignupForm)
 			r.Post("/signup", app.userSignup)
@@ -53,7 +54,15 @@ func (app *application) routes() http.Handler {
 				r.Post("/", app.snippetCreate)
 			})
 
-			r.With(app.snippetCtx).Get("/{snippetID}", app.snippetView)
+			r.Get("/{snippetID}", app.snippetView)
+		})
+
+		// rest routes for account
+		r.Route("/account", func(r chi.Router) {
+			r.Use(app.requireAuth)
+			r.Get("/", app.account)
+			r.Get("/password", app.accountPasswordUpdateForm)
+			r.Post("/password", app.accountPasswordUpdate)
 		})
 	})
 
